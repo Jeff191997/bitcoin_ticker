@@ -1,3 +1,4 @@
+import 'package:bitcoin_ticker/price_screen.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -11,9 +12,12 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       theme: ThemeData.dark().copyWith(
-        primaryColor: Colors.lightBlue,
+        appBarTheme: AppBarTheme(
+          color: Colors.lightBlue,
+        ),
         scaffoldBackgroundColor: Colors.white,
       ),
+      home: PriceScreen(),
     );
   }
 }
