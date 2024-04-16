@@ -12,29 +12,53 @@ class PriceScreen extends StatefulWidget {
 
 class _PriceScreenState extends State<PriceScreen> {
   String? selectedCurrency = 'AUD';
-  String? bitCoinValue = '?';
-  String? ethereumValue = '?';
-  String? liteCoinValue = '?';
+  // String? bitCoinValue = '?';
+  // String? ethereumValue = '?';
+  // String? liteCoinValue = '?';
+  //
+  // CoinData coinData = CoinData();
 
-  CoinData coinData = CoinData();
+  Map<String, String> coinValues = {};
+  bool isWaiting = false;
   void getData() async {
+    isWaiting = true;
     try {
-      Map<String, String> data = await coinData.getCoinData(selectedCurrency);
+      var data = await CoinData().getCoinData(selectedCurrency);
       print(data);
+      isWaiting = false;
       setState(() {
-        for (String crypto in data.keys) {
-          if (crypto == 'BTC') {
-            bitCoinValue = data[crypto];
-          } else if (crypto == 'ETH') {
-            ethereumValue = data[crypto];
-          } else {
-            liteCoinValue = data[crypto];
-          }
-        }
+        // for (String crypto in data.keys) {
+        //   if (crypto == 'BTC') {
+        //     bitCoinValue = data[crypto];
+        //   } else if (crypto == 'ETH') {
+        //     ethereumValue = data[crypto];
+        //   } else {
+        //     liteCoinValue = data[crypto];
+        //   }
+        // }
+        coinValues = data;
       });
     } catch (e) {
       print(e);
     }
+  }
+
+  Column makeCards() {
+    List<CryptoCard> cryptoCards = [];
+    for (String crypto in coinValues.keys) {
+      cryptoCards.add(
+        CryptoCard(
+          crypto: crypto,
+          coinValue: coinValues[crypto],
+          selectedCurrency: selectedCurrency,
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: cryptoCards,
+    );
   }
 
   DropdownButton<String> androidDropdown() {
@@ -98,65 +122,30 @@ class _PriceScreenState extends State<PriceScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.fromLTRB(18.0, 18.0, 18.0, 0.0),
-                child: Card(
-                  color: Colors.lightBlueAccent,
-                  elevation: 5.0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10.0),
-                  ),
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 28.0),
-                    child: Text(
-                      '1 BTC = $bitCoinValue $selectedCurrency',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.white, fontSize: 20.0),
+          // If I don't use isWaiting here like this and use only makeCards(), the start screen is only showing only white background. If I write
+          // like below, the start screen is not blank anymore.
+          isWaiting
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: <Widget>[
+                    CryptoCard(
+                      crypto: 'BTC',
+                      coinValue: '?',
+                      selectedCurrency: selectedCurrency,
                     ),
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(18.0, 18.0, 18.0, 0.0),
-                child: Card(
-                  color: Colors.lightBlueAccent,
-                  elevation: 5.0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10.0),
-                  ),
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 28.0),
-                    child: Text(
-                      '1 ETH = $ethereumValue $selectedCurrency',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.white, fontSize: 20.0),
+                    CryptoCard(
+                      crypto: 'ETH',
+                      coinValue: '?',
+                      selectedCurrency: selectedCurrency,
                     ),
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(18.0, 18.0, 18.0, 0.0),
-                child: Card(
-                  color: Colors.lightBlueAccent,
-                  elevation: 5.0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10.0),
-                  ),
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 28.0),
-                    child: Text(
-                      '1 LTC = $liteCoinValue $selectedCurrency',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.white, fontSize: 20.0),
+                    CryptoCard(
+                      crypto: 'LTC',
+                      coinValue: '?',
+                      selectedCurrency: selectedCurrency,
                     ),
-                  ),
-                ),
-              ),
-            ],
-          ),
+                  ],
+                )
+              : makeCards(),
           Container(
             height: 150.0,
             alignment: Alignment.center,
@@ -165,6 +154,39 @@ class _PriceScreenState extends State<PriceScreen> {
             child: Platform.isIOS ? iOSPicker() : androidDropdown(),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class CryptoCard extends StatelessWidget {
+  const CryptoCard({
+    required this.crypto,
+    required this.coinValue,
+    required this.selectedCurrency,
+  });
+  final String? crypto;
+  final String? coinValue;
+  final String? selectedCurrency;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(18.0, 18.0, 18.0, 0.0),
+      child: Card(
+        color: Colors.lightBlueAccent,
+        elevation: 5.0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10.0),
+        ),
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 28.0),
+          child: Text(
+            '1 $crypto = $coinValue $selectedCurrency',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.white, fontSize: 20.0),
+          ),
+        ),
       ),
     );
   }
