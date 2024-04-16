@@ -11,17 +11,19 @@ class PriceScreen extends StatefulWidget {
 }
 
 class _PriceScreenState extends State<PriceScreen> {
-  String? selectedCurrency = 'USD';
+  String? selectedCurrency = 'AUD';
   String? bitCoinValueInUSD = '?';
 
   CoinData coinData = CoinData();
   void getData() async {
     try {
-      double data = await coinData.getCoinData();
+      String data = await coinData.getCoinData(selectedCurrency);
       setState(() {
-        bitCoinValueInUSD = data.toStringAsFixed(0);
+        bitCoinValueInUSD = data;
       });
-    } catch (e) {}
+    } catch (e) {
+      print(e);
+    }
   }
 
   DropdownButton<String> androidDropdown() {
@@ -41,6 +43,7 @@ class _PriceScreenState extends State<PriceScreen> {
       onChanged: (value) {
         setState(() {
           selectedCurrency = value;
+          getData();
         });
       },
     );
@@ -59,7 +62,10 @@ class _PriceScreenState extends State<PriceScreen> {
       backgroundColor: Colors.lightBlue,
       itemExtent: 30,
       onSelectedItemChanged: (selectedIndex) {
-        print(selectedIndex);
+        setState(() {
+          selectedCurrency = currenciesList[selectedIndex];
+          getData();
+        });
       },
       children: pickerItems,
     );
@@ -92,7 +98,7 @@ class _PriceScreenState extends State<PriceScreen> {
               child: Padding(
                 padding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 28.0),
                 child: Text(
-                  '1 BTC = $bitCoinValueInUSD USD',
+                  '1 BTC = $bitCoinValueInUSD $selectedCurrency',
                   textAlign: TextAlign.center,
                   style: TextStyle(color: Colors.white, fontSize: 20.0),
                 ),
